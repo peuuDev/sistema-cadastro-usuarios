@@ -1,10 +1,12 @@
 package com.example.usuarios.controller;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -76,6 +78,37 @@ public class UsuarioController {
             repository.deleteById(id);
 
             return ResponseEntity.noContent().build();
+        }
+
+        return ResponseEntity.notFound().build();
+    }
+    
+    @PatchMapping("/usuarios/{id}")
+    public ResponseEntity<Usuario> atualizarParcialmente(
+            @PathVariable Long id,
+            @RequestBody Map<String, Object> dados) {
+
+        Optional<Usuario> usuarioExistente = repository.findById(id);
+
+        if (usuarioExistente.isPresent()) {
+
+            Usuario usuario = usuarioExistente.get();
+
+            if (dados.containsKey("nome")) {
+                usuario.setNome((String) dados.get("nome"));
+            }
+
+            if (dados.containsKey("sobrenome")) {
+                usuario.setSobrenome((String) dados.get("sobrenome"));
+            }
+
+            if (dados.containsKey("cpf")) {
+                usuario.setCpf((String) dados.get("cpf"));
+            }
+
+            repository.save(usuario);
+
+            return ResponseEntity.ok(usuario);
         }
 
         return ResponseEntity.notFound().build();
