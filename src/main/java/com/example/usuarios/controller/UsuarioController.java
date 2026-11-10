@@ -1,7 +1,6 @@
 package com.example.usuarios.controller;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -14,8 +13,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.http.ResponseEntity;
 
+import com.example.usuarios.dto.UsuarioAtualizacaoDTO;
 import com.example.usuarios.model.Usuario;
 import com.example.usuarios.repository.UsuarioRepository;
+
+import jakarta.validation.Valid;
 
 @RestController
 public class UsuarioController {
@@ -44,14 +46,14 @@ public class UsuarioController {
     }
     
     @PostMapping("/usuarios")
-    public Usuario cadastrarUsuario(@RequestBody Usuario usuario) {
+    public Usuario cadastrarUsuario(@Valid @RequestBody Usuario usuario) {
         return repository.save(usuario);
     }
     
     @PutMapping("/usuarios/{id}")
     public ResponseEntity<Usuario> atualizarUsuario(
             @PathVariable Long id,
-            @RequestBody Usuario novosDados) {
+            @Valid @RequestBody Usuario novosDados) {
 
         Optional<Usuario> usuarioExistente = repository.findById(id);
 
@@ -86,7 +88,7 @@ public class UsuarioController {
     @PatchMapping("/usuarios/{id}")
     public ResponseEntity<Usuario> atualizarParcialmente(
             @PathVariable Long id,
-            @RequestBody Map<String, Object> dados) {
+            @Valid @RequestBody UsuarioAtualizacaoDTO dados) {
 
         Optional<Usuario> usuarioExistente = repository.findById(id);
 
@@ -94,16 +96,16 @@ public class UsuarioController {
 
             Usuario usuario = usuarioExistente.get();
 
-            if (dados.containsKey("nome")) {
-                usuario.setNome((String) dados.get("nome"));
+            if (dados.getNome() != null) {
+                usuario.setNome(dados.getNome());
             }
 
-            if (dados.containsKey("sobrenome")) {
-                usuario.setSobrenome((String) dados.get("sobrenome"));
+            if (dados.getSobrenome() != null) {
+                usuario.setSobrenome(dados.getSobrenome());
             }
 
-            if (dados.containsKey("cpf")) {
-                usuario.setCpf((String) dados.get("cpf"));
+            if (dados.getCpf() != null) {
+                usuario.setCpf(dados.getCpf());
             }
 
             repository.save(usuario);
