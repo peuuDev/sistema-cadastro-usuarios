@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.http.ResponseEntity;
 
 import com.example.usuarios.dto.UsuarioAtualizacaoDTO;
+import com.example.usuarios.exceptions.UsuarioNaoEncontradoException;
 import com.example.usuarios.model.Usuario;
 import com.example.usuarios.repository.UsuarioRepository;
 
@@ -36,13 +37,11 @@ public class UsuarioController {
     @GetMapping("/usuarios/{id}")
     public ResponseEntity<Usuario> buscarUsuario(@PathVariable Long id) {
 
-        Optional<Usuario> usuario = repository.findById(id);
+        Usuario usuario = repository.findById(id)
+                .orElseThrow(() -> new UsuarioNaoEncontradoException(
+                        "Usuário não encontrado com ID: " + id));
 
-        if (usuario.isPresent()) {
-            return ResponseEntity.ok(usuario.get());
-        }
-
-        return ResponseEntity.notFound().build();
+        return ResponseEntity.ok(usuario);
     }
     
     @PostMapping("/usuarios")
