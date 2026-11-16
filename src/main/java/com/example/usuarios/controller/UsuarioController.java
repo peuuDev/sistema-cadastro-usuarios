@@ -1,7 +1,6 @@
 package com.example.usuarios.controller;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,95 +22,80 @@ import jakarta.validation.Valid;
 @RestController
 public class UsuarioController {
 
-    private final UsuarioRepository repository;
+	private final UsuarioRepository repository;
 
-    public UsuarioController(UsuarioRepository repository) {
-        this.repository = repository;
-    }
+	public UsuarioController(UsuarioRepository repository) {
+		this.repository = repository;
+	}
 
-    @GetMapping("/usuarios")
-    public List<Usuario> listarUsuarios() {
-        return repository.findAll();
-    }
-    
-    @GetMapping("/usuarios/{id}")
-    public ResponseEntity<Usuario> buscarUsuario(@PathVariable Long id) {
+	@GetMapping("/usuarios")
+	public List<Usuario> listarUsuarios() {
+		return repository.findAll();
+	}
 
-        Usuario usuario = repository.findById(id)
-                .orElseThrow(() -> new UsuarioNaoEncontradoException(
-                        "Usuário não encontrado com ID: " + id));
+	@GetMapping("/usuarios/{id}")
+	public ResponseEntity<Usuario> buscarUsuario(@PathVariable Long id) {
 
-        return ResponseEntity.ok(usuario);
-    }
-    
-    @PostMapping("/usuarios")
-    public Usuario cadastrarUsuario(@Valid @RequestBody Usuario usuario) {
-        return repository.save(usuario);
-    }
-    
-    @PutMapping("/usuarios/{id}")
-    public ResponseEntity<Usuario> atualizarUsuario(
-            @PathVariable Long id,
-            @Valid @RequestBody Usuario novosDados) {
+		Usuario usuario = repository.findById(id)
+				.orElseThrow(() -> new UsuarioNaoEncontradoException("Usuário não encontrado com ID: " + id));
 
-        Optional<Usuario> usuarioExistente = repository.findById(id);
+		return ResponseEntity.ok(usuario);
+	}
 
-        if (usuarioExistente.isPresent()) {
+	@PostMapping("/usuarios")
+	public Usuario cadastrarUsuario(@Valid @RequestBody Usuario usuario) {
+		return repository.save(usuario);
+	}
 
-            Usuario usuario = usuarioExistente.get();
+	@PutMapping("/usuarios/{id}")
+	public ResponseEntity<Usuario> atualizarUsuario(@PathVariable Long id, @Valid @RequestBody Usuario novosDados) {
 
-            usuario.setNome(novosDados.getNome());
-            usuario.setSobrenome(novosDados.getSobrenome());
-            usuario.setCpf(novosDados.getCpf());
+		Usuario usuario = repository.findById(id)
+				.orElseThrow(() -> new UsuarioNaoEncontradoException("Usuário não encontrado com ID: " + id));
 
-            repository.save(usuario);
+		usuario.setNome(novosDados.getNome());
+		usuario.setSobrenome(novosDados.getSobrenome());
+		usuario.setCpf(novosDados.getCpf());
 
-            return ResponseEntity.ok(usuario);
-        }
+		repository.save(usuario);
 
-        return ResponseEntity.notFound().build();
-    }
-    
-    @DeleteMapping("/usuarios/{id}")
-    public ResponseEntity<Void> excluirUsuario(@PathVariable Long id) {
+		return ResponseEntity.ok(usuario);
+	}
 
-        if (repository.existsById(id)) {
-            repository.deleteById(id);
+	@DeleteMapping("/usuarios/{id}")
+	public ResponseEntity<Void> excluirUsuario(@PathVariable Long id) {
 
-            return ResponseEntity.noContent().build();
-        }
+		if(!repository.existsById(id)) {
+			throw new UsuarioNaoEncontradoException("Usuário não encontrado com ID: " + id); 
+		}
+		 
+		repository.deleteById(id);
 
-        return ResponseEntity.notFound().build();
-    }
-    
-    @PatchMapping("/usuarios/{id}")
-    public ResponseEntity<Usuario> atualizarParcialmente(
-            @PathVariable Long id,
-            @Valid @RequestBody UsuarioAtualizacaoDTO dados) {
+		return ResponseEntity.noContent().build();
+	}
 
-        Optional<Usuario> usuarioExistente = repository.findById(id);
+	@PatchMapping("/usuarios/{id}")
+	public ResponseEntity<Usuario> atualizarParcialmente(@PathVariable Long id,
+			@Valid @RequestBody UsuarioAtualizacaoDTO dados) {
 
-        if (usuarioExistente.isPresent()) {
+		Usuario usuario = repository.findById(id)
+				.orElseThrow(() -> new UsuarioNaoEncontradoException("Usuário não encontrado com ID: " + id));
+		
+		if (dados.getNome() != null) {
+			usuario.setNome(dados.getNome());
+		}
 
-            Usuario usuario = usuarioExistente.get();
+		if (dados.getSobrenome() != null) {
+			usuario.setSobrenome(dados.getSobrenome());
+		}
 
-            if (dados.getNome() != null) {
-                usuario.setNome(dados.getNome());
-            }
+		if (dados.getCpf() != null) {
+			usuario.setCpf(dados.getCpf());
+		}
 
-            if (dados.getSobrenome() != null) {
-                usuario.setSobrenome(dados.getSobrenome());
-            }
+		repository.save(usuario);
 
-            if (dados.getCpf() != null) {
-                usuario.setCpf(dados.getCpf());
-            }
+		return ResponseEntity.ok(usuario);
 
-            repository.save(usuario);
-
-            return ResponseEntity.ok(usuario);
-        }
-
-        return ResponseEntity.notFound().build();
-    }
+	}
 }
