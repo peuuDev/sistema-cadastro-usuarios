@@ -49,52 +49,23 @@ public class UsuarioController {
 	@PutMapping("/usuarios/{id}")
 	public ResponseEntity<Usuario> atualizarUsuario(@PathVariable Long id, @Valid @RequestBody Usuario novosDados) {
 
-		Usuario usuario = service.findById(id)
-				.orElseThrow(() -> new UsuarioNaoEncontradoException("Usuário não encontrado com ID: " + id));
-
-		usuario.setNome(novosDados.getNome());
-		usuario.setSobrenome(novosDados.getSobrenome());
-		usuario.setCpf(novosDados.getCpf());
-
-		service.save(usuario);
-
-		return ResponseEntity.ok(usuario);
-	}
-
-	@DeleteMapping("/usuarios/{id}")
-	public ResponseEntity<Void> excluirUsuario(@PathVariable Long id) {
-
-		if(!service.existsById(id)) {
-			throw new UsuarioNaoEncontradoException("Usuário não encontrado com ID: " + id); 
-		}
-		 
-		service.deleteById(id);
-
-		return ResponseEntity.noContent().build();
+		return ResponseEntity.ok(service.atualizarUsuario(id, novosDados));
 	}
 
 	@PatchMapping("/usuarios/{id}")
 	public ResponseEntity<Usuario> atualizarParcialmente(@PathVariable Long id,
 			@Valid @RequestBody UsuarioAtualizacaoDTO dados) {
-
-		Usuario usuario = service.findById(id)
-				.orElseThrow(() -> new UsuarioNaoEncontradoException("Usuário não encontrado com ID: " + id));
 		
-		if (dados.getNome() != null) {
-			usuario.setNome(dados.getNome());
-		}
-
-		if (dados.getSobrenome() != null) {
-			usuario.setSobrenome(dados.getSobrenome());
-		}
-
-		if (dados.getCpf() != null) {
-			usuario.setCpf(dados.getCpf());
-		}
-
-		service.save(usuario);
-
-		return ResponseEntity.ok(usuario);
-
+		return ResponseEntity.ok(service.atualizarParcialmente(id, dados));
+		
 	}
+	
+	@DeleteMapping("/usuarios/{id}")
+	public ResponseEntity<Void> excluirUsuario(@PathVariable Long id) {
+
+		service.deletarUsuario(id);
+
+		return ResponseEntity.noContent().build();
+	}
+
 }
